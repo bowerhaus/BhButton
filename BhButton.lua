@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 This code is MIT licensed, see http://www.opensource.org/licenses/mit-license.php
 ]]
 
+require "BhHelpers" 
+
 BhButton = Core.class(Sprite)
 
 function BhButton:init(upState, downState, optionalTexturePack)
@@ -79,6 +81,11 @@ function BhButton:init(upState, downState, optionalTexturePack)
 	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown, self)
 	self:addEventListener(Event.MOUSE_MOVE, self.onMouseMove, self)
 	self:addEventListener(Event.MOUSE_UP, self.onMouseUp, self)
+
+	self:addEventListener(Event.TOUCHES_BEGIN, self.onTouchesBegin, self)
+	self:addEventListener(Event.TOUCHES_MOVE, self.onTouchesMove, self)
+	self:addEventListener(Event.TOUCHES_END, self.onTouchesEnd, self)
+	self:addEventListener(Event.TOUCHES_CANCEL, self.onTouchesCancel, self)
 	
 	self:addEventListener(Event.ADDED_TO_STAGE, self.onAddedToStage, self)
 	self:addEventListener(Event.REMOVED_FROM_STAGE, self.onRemovedFromStage, self)
@@ -138,18 +145,39 @@ function BhButton: onEnterFrame()
 end
 
 function BhButton:onMouseDown(event)
-	if not(self.focus) and  self.isEnabled and self:isVisibleDeeply() and self:hitTestPoint(event.x, event.y) then
-		self.focus=true
+	-- Fake a touch event with id 0, this allows buttons to work in the simulator
+	-- that doesn't normally understand touch events.	
+	event.touch={ x=event.x, y=event.y, id=0}
+	self:onTouchesBegin(event)	
+end
+
+function BhButton:onMouseMove(event)
+	-- Fake a touch event with id 0, this allows buttons to work in the simulator
+	-- that doesn't normally understand touch events.	
+	event.touch={ x=event.x, y=event.y, id=0}
+	self:onTouchesMove(event)	
+end
+
+function BhButton:onMouseUp(event)
+	-- Fake a touch event with id 0, this allows buttons to work in the simulator
+	-- that doesn't normally understand touch events.	
+	event.touch={ x=event.x, y=event.y, id=0}
+	self:onTouchesEnd(event)	
+end
+
+function BhButton:onTouchesBegin(event)
+	if self.touchId==nil and  self.isEnabled and self:isVisibleDeeply() and self:hitTestPoint(event.touch.x, event.touch.y) then
+		self.touchId=event.touch.id
 		self.isDown = true
 		self:updateVisualState()		
 		event:stopPropagation()
 	end
 end
 
-function BhButton:onMouseMove(event)
-	if self.focus then
-		if not self:hitTestPoint(event.x, event.y) and self.autoRelease then	
-			self.focus=false
+function BhButton:onTouchesMove(event)
+	if self.touchId==event.touch.id then
+		if not self:hitTestPoint(event.touch.x, event.touch.y) and self.autoRelease then	
+			self.touchId=nil
 			self.isDown = false
 			self:updateVisualState()
 		end
@@ -162,12 +190,12 @@ function BhButton:onMouseMove(event)
 	end
 end
 
-function BhButton:onMouseUp(event)
-	if self.focus then
+function BhButton:onTouchesEnd(event)
+	if self.touchId==event.touch.id then
 		if self.isToggle then
 			self.isLatched=not(self.isLatched)
 		end
-		self.focus=false
+		self.touchId=nil
 		self.isDown = false
 		self:updateVisualState()
 		
@@ -183,14 +211,15 @@ end
 
 -- if touches are cancelled, reset the state of the button
 function BhButton:onTouchesCancel(event)
-	if self.touchId==event.touch.id  then
-		self.touchId=nil
-		self.isDown = false
-		self:updateVisualState()
-		
-		-- See comment in onTouchesMove() above
-		-- event:stopPropagation()
-	end
+	-- We assume all touches are cancelled.
+	-- Don't check the touch id as this will break BhItemSlider :cancelTouchesFor()
+	--
+	self.touchId=nil
+	self.isDown = false
+	self:updateVisualState()
+	
+	-- See comment in onTouchesMove() above
+	-- event:stopPropagation()
 end
 
 function BhButton:setLabel(labelSprite)
