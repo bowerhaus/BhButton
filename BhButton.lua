@@ -250,7 +250,7 @@ function BhButton:updateVisualState()
 			self.downState:setScale(self.downScale)
 			self.downState:setRotation(self.downRotation)
 			self:setLabelState(self.downScale, self.downRotation)
-			self:addChildAt(self.downState, 0)
+			self:addChildAt(self.downState, 1)
 		end
 	else
 		if self:contains(self.downState) then
@@ -261,7 +261,7 @@ function BhButton:updateVisualState()
 			self.upState:setScale(self.upScale)
 			self.upState:setRotation(self.upRotation)
 			self:setLabelState(self.upScale, self.upRotation)
-			self:addChildAt(self.upState, 0)
+			self:addChildAt(self.upState, 1)
 		end
 	end
 	if self.isEnabled then
