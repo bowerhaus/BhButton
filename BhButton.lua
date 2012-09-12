@@ -24,8 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 This code is MIT licensed, see http://www.opensource.org/licenses/mit-license.php
 ]]
 
-require "BhHelpers" 
-
 BhButton = Core.class(Sprite)
 
 function BhButton:init(upState, downState, optionalTexturePack)
