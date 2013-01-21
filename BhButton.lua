@@ -38,18 +38,24 @@ function BhButton:init(upState, downState, optionalTexturePack)
 		if type(upState)=="string" then
 			-- Texture name supplied
 			self.upState = Bitmap.bhLoad(upState)
+		elseif upState.isVisible then
+			-- Actual sprite supplied
+			self.upState = upState
 		else
-			-- Actual texture supplied
+			-- Assume texture supplied
 			self.upState = Bitmap.new(upState)
 		end
 		if downState then
 			if type(downState)=="string" then
 				-- Texture name supplied
 				self.downState = Bitmap.bhLoad(downState)
-			else
-				-- Actual texture supplied
-				self.downState = Bitmap.new(downState)
-			end
+		elseif downState.isVisible then
+			-- Actual sprite supplied
+			self.downState = downState
+		else
+			-- Assume texture supplied
+			self.downState = Bitmap.new(downState)
+		end
 		end
 	end
 	
@@ -67,8 +73,12 @@ function BhButton:init(upState, downState, optionalTexturePack)
 		self.downScale=0.8
 	end
 	
-	self.upState:setAnchorPoint(0.5, 0.5)
-	self.downState:setAnchorPoint(0.5, 0.5)	
+	if self.upState.setAnchorPoint then
+		self.upState:setAnchorPoint(0.5, 0.5)
+	end
+	if self.downState.setAnchorPoint then
+		self.downState:setAnchorPoint(0.5, 0.5)	
+	end
 
 	-- set the visual state as "up" and "enabled"	
 	self.isEnabled = true
@@ -197,10 +207,9 @@ function BhButton:onTouchesEnd(event)
 		self.isDown = false
 		self:updateVisualState()
 		
-		-- Button is clicked, dispatch "click" event
 		event=Event.new("click")
 		event.target=self
-		self:dispatchEvent(event)	
+		self:dispatchEvent(event)
 		
 		-- See comment in onTouchesMove() above
 		-- event:stopPropagation()
