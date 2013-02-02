@@ -85,11 +85,6 @@ function BhButton:init(upState, downState, optionalTexturePack)
 	self.isDown=false		
 	self:updateVisualState()
 
-	-- register to all mouse and touch events
-	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown, self)
-	self:addEventListener(Event.MOUSE_MOVE, self.onMouseMove, self)
-	self:addEventListener(Event.MOUSE_UP, self.onMouseUp, self)
-
 	self:addEventListener(Event.TOUCHES_BEGIN, self.onTouchesBegin, self)
 	self:addEventListener(Event.TOUCHES_MOVE, self.onTouchesMove, self)
 	self:addEventListener(Event.TOUCHES_END, self.onTouchesEnd, self)
@@ -150,27 +145,6 @@ function BhButton: onEnterFrame()
 		self:setPosition(self.body:getPosition())
 		self:setRotation(self.body:getAngle() * 180 / math.pi)
 	end
-end
-
-function BhButton:onMouseDown(event)
-	-- Fake a touch event with id 0, this allows buttons to work in the simulator
-	-- that doesn't normally understand touch events.	
-	event.touch={ x=event.x, y=event.y, id=0}
-	self:onTouchesBegin(event)	
-end
-
-function BhButton:onMouseMove(event)
-	-- Fake a touch event with id 0, this allows buttons to work in the simulator
-	-- that doesn't normally understand touch events.	
-	event.touch={ x=event.x, y=event.y, id=0}
-	self:onTouchesMove(event)	
-end
-
-function BhButton:onMouseUp(event)
-	-- Fake a touch event with id 0, this allows buttons to work in the simulator
-	-- that doesn't normally understand touch events.	
-	event.touch={ x=event.x, y=event.y, id=0}
-	self:onTouchesEnd(event)	
 end
 
 function BhButton:onTouchesBegin(event)
