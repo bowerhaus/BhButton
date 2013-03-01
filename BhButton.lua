@@ -29,9 +29,11 @@ BhButton = Core.class(Sprite)
 function BhButton:init(upState, downState, optionalTexturePack)
 	if optionalTexturePack then
 		local upStateTexture=optionalTexturePack:getTextureRegion(upState..".png")
+		assert(upStateTexture, upState)
 		self.upState = Bitmap.new(upStateTexture)
 		if downState then
 			local downStateTexture=optionalTexturePack:getTextureRegion(downState..".png")
+			assert(downStateTexture, downState)
 			self.downState = Bitmap.new(downStateTexture)
 		end
 	else
@@ -90,8 +92,7 @@ function BhButton:init(upState, downState, optionalTexturePack)
 	self:addEventListener(Event.TOUCHES_END, self.onTouchesEnd, self)
 	self:addEventListener(Event.TOUCHES_CANCEL, self.onTouchesCancel, self)
 	
-	self:addEventListener(Event.ADDED_TO_STAGE, self.onAddedToStage, self)
-	self:addEventListener(Event.REMOVED_FROM_STAGE, self.onRemovedFromStage, self)
+	self:addEventListener(Event.ENTER_FRAME, self.onEnterFrame, self)
 end
 
 function BhButton:registerCommand(target, commandName, optQueryName)
@@ -131,14 +132,6 @@ function BhButton:beEnabled(tf)
 	end
 end
 
-function BhButton:onAddedToStage()
-self:addEventListener(Event.ENTER_FRAME, self.onEnterFrame, self)
-end
- 
-function BhButton:onRemovedFromStage()
-	self:removeEventListener(Event.ENTER_FRAME, self.onEnterFrame, self)
-end 
-
 function BhButton: onEnterFrame()
 	self:queryCommands()
 	if self.body then
@@ -148,10 +141,12 @@ function BhButton: onEnterFrame()
 end
 
 function BhButton:onTouchesBegin(event)
-	if self.touchId==nil and  self.isEnabled and self:isVisibleDeeply() and self:hitTestPoint(event.touch.x, event.touch.y) then
-		self.touchId=event.touch.id
-		self.isDown = true
-		self:updateVisualState()		
+	if self:isVisibleDeeply() and self:hitTestPoint(event.touch.x, event.touch.y) then
+		if self.touchId==nil and self.isEnabled then 
+			self.touchId=event.touch.id
+			self.isDown = true
+			self:updateVisualState()	
+		end
 		event:stopPropagation()
 	end
 end
